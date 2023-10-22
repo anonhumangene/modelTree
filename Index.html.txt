@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Armor</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+			background-color: yellow;
+        }
+        .parent {
+			height:400px;
+			width:100%;
+            display: flex;
+			flex: 1;
+			margin: 0;
+            overflow: hidden;
+			background-color: brown;
+			flex-direction: row;
+        }
+		.container {
+			width:100%;
+            display: flex;
+			flex: 1;
+			margin: 0;
+            overflow: hidden;-
+			background-color: white;
+			flex-direction: row;
+        }
+		.sub-container {
+            display: flex;
+			margin: 0;
+			background-color: white;
+			flex-direction: column;
+        }
+		.nested-container {
+		      margin-left: 20px; /* Indent nested sections */
+
+		}
+		/* for freemind        
+		.nested-container {
+			display: flex; 
+			justify-content: flex-start;  
+			align-items: center; 
+
+		}*/
+        .containerMindMapSideBySideView{
+			background-color:pink;
+           display:flex;
+		   align-items:center;
+			}
+        .nestedContainerMindMapTopToBottomView {
+			background-color: pink;
+         display:flex;
+	    flex-direction:column;
+		//				margin-left:20px;
+
+			}
+        .containerListSideBySideView{
+			background-color:pink;
+       //    display:flex;
+		 //  align-items:center;
+			}
+        .nestedContainerListTopToBottomView {
+			background-color: pink;
+      //   display:flex;
+	  //  flex-direction:column;
+						margin-left:20px;
+
+			}
+
+        .containerSubListView {
+           
+			background-color: pink;
+			}
+        .nestedContainerSubListView {
+           
+			background-color: pink;
+			}
+        .subElementContainerSubListView {
+           
+			background-color: pink;
+			}
+        .subElementContainerMindMapView {
+           
+			background-color: pink;
+			}
+        .pane {
+           
+			background-color: pink;
+			}
+        .pane-buttons {
+			background-color: #f9f9fb;
+			
+        }
+		.option-buttons {
+		margin: 5px
+		height:100%;
+		background: transparent;
+		}
+        .divider-vertical {
+			width: 2px;
+            cursor: col-resize;
+            background-color: yellow;
+        }
+        .divider-horizontal {
+			height: 2px;
+            cursor: row-resize;
+			background-color: blue;
+		}
+		
+		 /* Style for the text area */
+        textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+        }
+		.image-container {
+
+        }
+		
+		.image-container img {
+			overflow-x: scroll;
+			overflow-y: scroll;            
+            display: block;
+            margin: 0 auto;
+        }
+        
+		 /* Styling for expand and collapse buttons */
+        .expand-btn, .collapse-btn {
+            padding: 5px 5px;
+            background-color: #0074d9;
+            color: white;
+            border: none;
+			 border-radius: 10px;
+            cursor: pointer;
+        }
+           .nested-container {
+		      margin-left: 20px; /* Indent nested sections */
+
+ }
+ /* for freemind        .nested-container {
+			display: flex; 
+			justify-content: flex-start;  
+			align-items: center; 
+
+ }*/
+         .context-menu {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        .context-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .context-menu li {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .context-menu li:hover {
+            background-color: #f0f0f0;
+        }
+		
+		
+		.overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        /* Styles for the pop-up container */
+        .popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Styles for form elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+
+		/* Modal styles */
+		.modal {
+		  display: none;
+		  position: fixed;
+		  z-index: 1;
+		  left: 0;
+		  top: 0;
+		  width: 100%;
+		  height: 100%;
+		  background-color: rgba(0,0,0,0.5);
+		}
+
+		.modal-content {
+		  background-color: #fefefe;
+		  margin: 15% auto;
+		  padding: 20px;
+		  border: 1px solid #888;
+		  width: 40%;
+		  text-align: center;
+		}
+		
+		
+		/* Style the form within the modal */
+		/* Style the form within the modal */
+		#keySelectionForm {
+			display: flex;
+			flex-direction: column; /* Change to 'row' to display horizontally */
+			align-items: flex-start; /* Align items to the start (left) */
+		}
+
+		/* Style the radio buttons */
+		#keySelectionForm label {
+			display: flex;
+			align-items: center; /* Vertically center radio buttons with labels */
+			margin-right: 10px; /* Add spacing between radio buttons and labels */
+		}
+		/* Style the OK button */
+		#keySelectionForm input[type="submit"] {
+			margin-top: 10px;
+			background-color: #007BFF;
+			color: #fff;
+			border: none;
+			padding: 5px 10px;
+			cursor: pointer;
+		}
+		.close {
+		  position: absolute;
+		  top: 0;
+		  right: 0;
+		  padding: 10px;
+		  cursor: pointer;
+		}
+
+		/* Button styles */
+		button {
+		backgroundColor:white
+		}
+
+		/* Input styles */
+		input {
+		  width: 100%;
+		  padding: 10px;
+		  margin-bottom: 10px;
+		}
+
+
+
+.toggle-container {
+    display: flex;
+    align-items: center;
+    color: #333;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: '';
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: 0.4s;
+    transition: 0.4s;
+}
+
+
+
+
+
+.moon {
+    width: 24px;
+    height: 24px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+}
+
+.sun {
+    width: 24px;
+    height: 24px;
+    background-color: #ffdb00;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    display: none;
+}
+
+
+
+    </style>
+</head>
+<body>
+
+<div class="container" id="buttonPane" style="width: 100%;height:5%">
+	<div class="pane pane-buttons" style="width: 100%;">
+		<button  class="option-buttons" title="Load from database" id="retrieveKeysButton" >Load from database</button>
+		<button  class="option-buttons" title="Feed data from user" id="loadJsonDataBtn" >Feed data from user</button>
+		<button  class="option-buttons"title="Load file" onclick="openJson()">Load file</button>
+		<button  class="option-buttons" title="Download as JSON file" onclick="saveJson()" >Download as JSON file</button>
+		<button  class="option-buttons" title="Save Database" onclick="storeDataInDatabase()" >Save Database *</button>
+		<button  class="option-buttons" title="Save as html report" onclick="saveHtml()" >Save as html report</button>
+		<button class="option-buttons" title="Toggle Background color" onclick="ChangeBackgroundColor()">Toggle Background color</button>
+		<button  class="option-buttons" title="Internal" onclick="ToggleModelCodeBox()">Internal</button>
+		
+		<button id="zoomInButton" title="Zoom in" onmousedown="startZoom('in')" onmouseup="stopZoom()" >Zoom in</button>
+		<button id="zoomOutButton" title="Zoom out" onmousedown="startZoom('out')" onmouseup="stopZoom()">Zoom out</button>
+		<button id="mindMapViewButton" title="viewAsMindMap" onclick="viewAsMindMap()">viewAsMindMap</button>
+		<button id="subListViewButton" title="viewAsSubList" onclick="viewAsSubList()">viewAsSubList</button>
+		<button id="developerZone">BLANK</button>
+
+
+	</div>
+</div>
+<div id="saveJsonDataForm" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Enter Text</h2>
+      <input type="text" id="jsonDataUserInputText">
+      <button id="saveJsonDataButton" >Save</button>
+    </div>
+  </div>
+<div class="context-menu" id="jsonButtonContextMenu">
+        <ul>
+            <li id="rightClickOptionRename">Edit</li>
+            <li id="rightClickOptionChangeModel">ChangeModel</li>
+            <li id="rightClickOptionInsertChild">InsertChild</li>
+            <li id="rightClickOptionCut">Cut</li>
+            <li id="rightClickOptionPasteAsChild">PasteAsChild</li>
+            <li id="rightClickOptionInsertAbove">InsertAbove</li>
+            <li id="rightClickOptionInsertBelow">InsertBelow</li>
+            <li id="rightClickOptionDelete">Delete</li>
+        </ul>
+    </div>
+
+
+<!-- Modal or dialog -->
+<div id="keySelectionModal" class="modal">
+    <div class="modal-content">
+        <h2>Select a Key</h2>
+        <form id="keySelectionForm">
+            <!-- Radio buttons will be dynamically added here -->
+        </form>
+    </div>
+</div>
+
+
+<div class="overlay" id="modelRename">
+        <div class="popup">
+            <h2>Model Configuration</h2>
+            <form id="modelConfigForm">
+                <div class="form-group">
+                    <label for="modelName">Model Name:</label>
+                    <input type="text" id="modelName" name="modelName" required>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn" id="saveConfigBtn">Save</button>
+                    <button type="button" class="btn" id="cancelConfigBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>    
+<div class="overlay" id="jsonFileLoad">
+        <!-- Pop-up container -->
+        <div class="popup">
+            <h2>Load data</h2>
+            <form id="modelConfigForm">
+                <div class="form-group">
+                    <label for="jsonPath">JSON Path</label>
+                    <input type="file" id="jsonPath" name="jsonPath" required>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn" id="openConfigBtn">Open</button>
+                    <button type="button" class="btn" id="cancelConfigBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+<div id="4Panes" class="container parent " style="width: 100%;height:95%">
+	<div id="LeftPane" class="sub-container" style="width: 19.9%;height: 100%;">
+		<div id="json-container" style="overflow-x: scroll;;overflow-y: scroll;width: 100%;height: 70%;">
+		<!--div id="json-container" class="subListViewContainer" style="overflow-x: scroll;;overflow-y: scroll;width: 100%;height: 70%;"-->
+		<!--div id="json-container" class="pane" style="overflow-x: scroll;;overflow-y: scroll;width: 100%;height: 70%;"-->
+		<!--div id="json-container" class="pane" style="overflow-x: scroll;;overflow-y: scroll;width: 100%;height: 70%;display:flex;justify-content: flex-start;align-items: center;"-->
+			<!-- Content for the left pane -->
+				
+			</div>
+		<div id="leftDivider" class="divider-horizontal" style="width: 100%;height: 1%;"></div>
+		<div id="BottomLeftPane" class="pane" style="width: 100%;height: 29%;">
+			<div id="dropdown-container"></div> 
+	  <button onclick="loadPlantUmlSampleCode()">Load Sample</button>
+	  <!--button onclick="saveUrlToModel()">Commit</button-->
+	  
+				  <textarea style="background-color: white;width: 100%;height: 80%;" type="text" id="plantUmlCode">
+				  
+				  </textarea>
+		</div>
+		</div>
+	<div id="verticalDivider" class="divider-vertical" style="width: 0.2%;"></div>
+	<div id="RightPane" class="sub-container" style="width: 79.9%;">
+		<div id="TopRightPane" class="pane"  style="background-color: black;width: 100%;height: 70%;align-items: center;justify-content: center;height: 100vh;min-height:10%;min-width:10%;overflow: auto;" oncontextmenu="showImageContextMenu(event)" >
+			    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+			<div id="TopRightPaneImageContainer"  class="image-container" style="background-color: black;width: 100%;height: 100%;">
+				<img id="ModelSource" src="batman.jpg" alt="Description of the image" style="box-sizing: border-box;transform-origin: 0% 0%;">
+				<object id="ModelSourceSVG" data="your-svg-image.svg" type="image/svg+xml" style="margin:auto;transform-origin: 0% 0%;"></object>
+		<div class="context-menu" id="imgContextMenu" >
+        <ul>
+            <li id="rightClickImagePasteFromClipBoard">Paste image from clipboard(Hint:Ctrl V)</li>
+            <li id="rightClickImagePasteURL">Paste image URL</li>
+        </ul>
+    </div>
+			</div>
+		</div>
+		<div id="rightDivider" class="divider-horizontal" style="width: 100%;height: 1%;"></div>
+		<div id="BottomRightPane" class="pane" style="width: 100%;height: 29%;resize:both;min-height:10%;min-width:10%;">
+			 <label style="width: 100%;height: 10%;" for="userInputDescription">Description</label>
+			  <textarea style="background-color: LemonChiffon;width: 100%;height: 90%;" type="text" id="userInputDescription" "">
+			  
+			  </textarea>
+		</div>
+	</div>
+</div>
+
+<script src="script.js"></script>
+<script src="deflate.js"></script>
+
+
+</body>
+</html>

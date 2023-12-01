@@ -29,10 +29,10 @@ To do:
 */
 
 
-//const plantUmlServer = "http://www.plantuml.com";//avoid this for sensitive data
+const plantUmlServer = "http://www.plantuml.com";//avoid this for sensitive data
 
 
-const plantUmlServer = "http://127.0.0.1:8000";
+//const plantUmlServer = "http://127.0.0.1:8000";
 //this needs steps to be followed https://plantuml.com/picoweb
 //1. run 
 //java -jar "c:\tools\plantuml\plantuml.jar" -picoweb:8000:127.0.0.1

@@ -122,7 +122,11 @@
         }
 		
 		.image-container img {
-			overflow-x: scroll;
+			overflow-x: scroll
+
+
+
+;
 			overflow-y: scroll;            
             display: block;
             margin: 0 auto;
@@ -344,7 +348,7 @@
 		<button  class="option-buttons" title="Load from database" id="retrieveKeysButton" >Load from database</button>
 		<button  class="option-buttons" title="Feed data from user" id="loadJsonDataBtn" >Feed data from user</button>
 		<button  class="option-buttons"title="Load file" onclick="openJson()">Load file</button>
-		<button  class="option-buttons" title="Download as JSON file" onclick="saveJson()" >Download as JSON file</button>
+		<button  class="option-buttons" title="Download as JSON file" onclick="saveJson()" >Download</button>
 		<button  class="option-buttons" title="Save Database" onclick="storeDataInDatabase()" >Save Database *</button>
 		<button  class="option-buttons" title="Save as html report" onclick="saveHtml()" >Save as html report</button>
 		<button class="option-buttons" title="Toggle Background color" onclick="ChangeBackgroundColor()">Toggle Background color</button>
@@ -355,6 +359,7 @@
 		<button id="mindMapViewButton" title="viewAsMindMap" onclick="viewAsMindMap()">viewAsMindMap</button>
 		<button id="subListViewButton" title="viewAsSubList" onclick="viewAsSubList()">viewAsSubList</button>
 		<button id="developerZone">BLANK</button>
+		<input type="text" id="textToCopy" style="display: none;">
 
 
 	</div>
@@ -369,14 +374,14 @@
   </div>
 <div class="context-menu" id="jsonButtonContextMenu">
         <ul>
-            <li id="rightClickOptionRename">Edit</li>
-            <li id="rightClickOptionChangeModel">ChangeModel</li>
-            <li id="rightClickOptionInsertChild">InsertChild</li>
-            <li id="rightClickOptionCut">Cut</li>
-            <li id="rightClickOptionPasteAsChild">PasteAsChild</li>
-            <li id="rightClickOptionInsertAbove">InsertAbove</li>
-            <li id="rightClickOptionInsertBelow">InsertBelow</li>
-            <li id="rightClickOptionDelete">Delete</li>
+            <li id="rightClickOptionRename">Rename(Ctrl R)</li>
+            <li id="rightClickOptionInsertChild">InsertChild (Ctrl I)</li>
+            <li id="rightClickOptionInsertJsonAsChild">InsertJsonAsChild (Ctrl J)</li>
+            <li id="rightClickOptionCut">Cut (Ctrl X)</li>
+            <li id="rightClickOptionPasteAsChild">PasteAsChild(Ctrl V)</li>
+            <li id="rightClickOptionMoveUp">MoveUp (Ctrl ArrowUp)</li>
+            <li id="rightClickOptionMoveDown">MoveDown (Ctrl ArrowDown)</li>
+            <li id="rightClickOptionDelete">Delete (Ctrl Del)</li>
         </ul>
     </div>
 
@@ -394,10 +399,10 @@
 
 <div class="overlay" id="modelRename">
         <div class="popup">
-            <h2>Model Configuration</h2>
+            <h2>Rename element</h2>
             <form id="modelConfigForm">
                 <div class="form-group">
-                    <label for="modelName">Model Name:</label>
+                    <label for="modelName">New Name:</label>
                     <input type="text" id="modelName" name="modelName" required>
                 </div>
                 <div class="form-group">
@@ -461,9 +466,12 @@
 		<div id="rightDivider" class="divider-horizontal" style="width: 100%;height: 1%;"></div>
 		<div id="BottomRightPane" class="pane" style="width: 100%;height: 29%;resize:both;min-height:10%;min-width:10%;">
 			 <label style="width: 100%;height: 10%;" for="userInputDescription">Description</label>
-			  <textarea style="background-color: LemonChiffon;width: 100%;height: 90%;" type="text" id="userInputDescription" "">
+			 <button id="viewDescriptionWithFormat" >view formatted</button>
+			 <button id="editDescriptionWithFormat" >edit with format</button>
+			  <textarea style="background-color: LemonChiffon;width: 100%;height: 90%;display: none;" type="text" id="userInputDescription" "">
 			  
 			  </textarea>
+			  <div id="userDescriptionFormatted" style="background-color: white;width: 100%;height: 90%;"></div>
 		</div>
 	</div>
 </div>
@@ -474,3 +482,4 @@
 
 </body>
 </html>
+

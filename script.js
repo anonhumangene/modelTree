@@ -43,11 +43,13 @@ const plantUmlServer = "http://127.0.0.1:8000";
 //python -m http.server and navigate to http://localhost:8000/
 
 
+var parentstr="";
 var jsonButtonTargetString="";
 var jsonButtonTargetParentString="";
 var modelSource="";
 var modelDescriptionSource="";
 var nodeExpression="";
+var latestnodeexpression=`window.jsonData["name"]`;
 var view="sublist"
 var str;
 
@@ -76,7 +78,6 @@ package Professional {
 package Restaurant {
   usecase "Eat Food" as UC1
   usecase "Pay for Food" as UC2
-
   usecase "Drink" as UC3
   usecase "Review" as UC4
 }
@@ -423,9 +424,23 @@ const TopRightPane = document.getElementById('TopRightPane');
 const TopRightPaneImageContainer = document.getElementById('TopRightPaneImageContainer');
 const imageInput = document.getElementById("imageInput");
 const retrieveKeysButtonElement = document.getElementById('retrieveKeysButton');
-const keySelectionFortonElement = document.getElementById('retrieveKeysButton');
 
+const viewDescriptionWithFormat = document.getElementById('viewDescriptionWithFormat');
+const editDescriptionWithFormat = document.getElementById('editDescriptionWithFormat');
+const userDescriptionFormatted = document.getElementById('userDescriptionFormatted');
 
+viewDescriptionWithFormat.addEventListener('click', function () {
+	
+	userDescriptionFormatted.style.display='block';
+	userInputDescriptionElement.style.display='none';
+	userDescriptionFormatted.innerHTML=userInputDescriptionElement.value;
+})
+
+editDescriptionWithFormat.addEventListener('click', function () {
+	userDescriptionFormatted.style.display='none';
+	userInputDescriptionElement.style.display='block';
+	
+})
 
 
 const dbName = 'myDB';
@@ -438,15 +453,23 @@ jsonContainerElement.classList.add('containerListSideBySideView');
 
 
 function saveHtml(){
-const fileName = window.jsonData['name'] + `.html`;
-
-let htmlString=`<!DOCTYPE html>
-<html>
-<head>
-    <title>`+window.jsonData['name']+`</title>
-</head>
-<body>`+htmlReport+`</body>
-</html>`
+	
+	alert("Generating report for node "+eval(window.str))
+	
+	const fileName = eval(window.nodeExpression) + `.html`;
+	refreshJsonPane()
+	htmlReport="";delimiterArray=['\t'];
+	//traverseHierarchy(window.jsonData)
+	var traverseRoot=window.nodeExpression.replace(/\["name"\]$/, '')
+	alert("Traverse Root is"+traverseRoot)
+	traverseHierarchy(eval(traverseRoot))
+	let htmlString=`<!DOCTYPE html>
+	<html>
+	<head>
+		<title>`+eval(window.str)+`</title>
+	</head>
+	<body>`+htmlReport+`</body>
+	</html>`
 
 	if (fileName !== null && fileName.trim() !== '')
 	{
@@ -463,7 +486,7 @@ let htmlString=`<!DOCTYPE html>
 
 alert("Remember, Technology is a great slave but a poor master");
 window.jsonData = JSON.parse(jsonString);
-traverseHierarchy(window.jsonData)
+//traverseHierarchy(window.jsonData)
 renderJSON(window.jsonData, jsonContainerElement,"window.jsonData");
 plantUmlCodeElement.value="Click on a node for details"
 userInputDescriptionElement.value="Click on a node for details"
@@ -509,11 +532,15 @@ function viewAsSubList(){
 function traverseHierarchy(node,pathArray2=[]) {
     //console.log(node.name);
 	//alert(pathArray2)
-//	alert(node.name)
+	//alert(node.name)
 	pathArray2.push(node.name);
-	htmlReport+=delimiterArray.join('')+'<h'+delimiterArray.length+'>'+node.name+'</h'+delimiterArray.length+'>'+'\n'
+	if(delimiterArray.length<=6)
+		htmlReport+=delimiterArray.join('')+'<h'+delimiterArray.length+'>'+node.name+'</h'+delimiterArray.length+'>'+'\n'
+	else
+		htmlReport+=delimiterArray.join('')+'<h6>'+node.name+'</h6>'+'\n'
+		
 	if(node.svgLink!="")
-		htmlReport+=delimiterArray.join('')+'<img src='+ node.svgLink+'>'+'\n'
+		htmlReport+=delimiterArray.join('')+'<img src='+ node.svgLink+'  style="max-width: 100%;">'+'\n'
 	if(node.textDescription!="")
 		htmlReport+=delimiterArray.join('')+'<p>'+node.textDescription+'</p>'+'\n'
   if (node.subElements && node.subElements.length > 0) {
@@ -550,70 +577,276 @@ dynamicButton.dataset.rightClickOptionId = rightClickOptionId;
 
 
 document.addEventListener('click', hidejsonButtonContextMenu);									  
-document.getElementById("rightClickOptionRename").addEventListener('click', () => {
+
+function renameButtonCallback(){
 	openPopup("rename")
 	hidejsonButtonContextMenu();
-});
-document.getElementById("rightClickOptionChangeModel").addEventListener('click', () => {
-	openPopup("changeModel")
+};
+
+function insertChildElement(){
+	openPopup("addChild");
 	hidejsonButtonContextMenu();
-});
-document.getElementById("rightClickOptionInsertChild").addEventListener('click', () => {
-	openPopup("addChild")
+};
+
+function insertJsonAsChild() {
+	openPopup("addJsonAsChild")
 	hidejsonButtonContextMenu();
-});
-document.getElementById("rightClickOptionInsertAbove").addEventListener('click', () => {
-	alert(jsonButtonTargetParentString)
-	alert(eval(jsonButtonTargetParentString))
-	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\['name'\]$/, ""));
-	const indexToDelete = jsonArray.findIndex(item => item.name === eval(str));
-	alert("Index is"+indexToDelete)
+};
+document.getElementById("rightClickOptionInsertChild").addEventListener('click', insertChildElement) 
+document.getElementById("rightClickOptionInsertJsonAsChild").addEventListener('click', insertJsonAsChild);
+document.getElementById("rightClickOptionMoveUp").addEventListener('click',  moveUpCallBack);
+document.getElementById("rightClickOptionMoveDown").addEventListener('click', moveDownCallBack);
+document.getElementById("rightClickOptionCut").addEventListener('click', cutButtonCallback)
+document.getElementById("rightClickOptionPasteAsChild").addEventListener('click',pasteAsChildButtonCallback);
+document.getElementById("rightClickOptionDelete").addEventListener('click',deleteButtonCallback) 
+document.getElementById("rightClickOptionRename").addEventListener('click', renameButtonCallback);
+
+jsonContainerElement.addEventListener('keydown', (event) => {
+  event.preventDefault();
+	window.jsonButtonTargetParentString=str;            // Show the custom context menu at the mouse position
+
+  // Check if the Ctrl key and the Arrow Up key are both pressed
+  if (event.ctrlKey && event.key === 'ArrowUp') {
+    moveUpCallBack();
+  }
+  if (event.ctrlKey && event.key === 'ArrowDown') {
+    moveDownCallBack();
+  }
+  if (event.ctrlKey && event.key === 'Delete') {
+    deleteButtonCallback();
+  }
+  if (event.ctrlKey && event.key === 'r') {
+    renameButtonCallback();
+  }
+  if (event.ctrlKey && event.key === 'c') {
+    copyButtonCallback();
+  }
+  if (event.ctrlKey && event.key === 'x') {
+    cutButtonCallback();
+  }
+  if (event.ctrlKey && event.key === 'v') {
+    pasteAsChildButtonCallback();
+  }
+  if (event.ctrlKey && event.key === 'i') {
+    insertChildElement();
+  }
+  if (event.ctrlKey && event.key === 'j') {
+    insertJsonAsChild();
+  }
+  if (!event.ctrlKey && event.key === 'ArrowUp') {
+	var sizeOfParentElement = eval(latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["subElements"].length`));
+	var indexOfCurrentElement = eval(latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["subElements"].length`));
+	const regex = /\["subElements"\]\[(\d+)\]\["name"\]$/;
+	const match = regex.exec(latestnodeexpression);
+
+	if (match) {
+	  const indexOfCurrentElement = parseInt(match[1], 10);
+	  if(indexOfCurrentElement>0)
+		var newElementIndex  = indexOfCurrentElement-1
+	  var newNodeexpression=latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["subElements"\][`+newElementIndex+`]["name"]`)
+	  const buttonsel = document.querySelector(`.jsonButton[nodeExpression='` + newNodeexpression + `']`);
+		if(buttonsel){
+		buttonsel.click();
+		buttonsel.focus();				
+		}
+	}
+  }
+  if (!event.ctrlKey && event.key === 'ArrowDown') {
+	var sizeOfParentElement = eval(latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["subElements"].length`));
+	var indexOfCurrentElement = eval(latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["subElements"].length`));
+	const regex = /\["subElements"\]\[(\d+)\]\["name"\]$/;
+	const match = regex.exec(latestnodeexpression);
+
+	if (match) {
+	  const indexOfCurrentElement = parseInt(match[1], 10);
+	  if(indexOfCurrentElement<(sizeOfParentElement-1))
+		var newElementIndex  = indexOfCurrentElement+1
+	  var newNodeexpression=latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["subElements"\][`+newElementIndex+`]["name"]`)
+	 const buttonsel = document.querySelector(`.jsonButton[nodeExpression='` + newNodeexpression + `']`);
+	if(buttonsel)
+	{		buttonsel.click();
+		buttonsel.focus();				
+	}
+	}
+  }
+  if (!event.ctrlKey && event.key === 'ArrowRight') {
+		var subelementexpression = latestnodeexpression
+		var subelementsSizeexpression = latestnodeexpression.replace(/\["name"\]$/,`["subElements"]`)+`.length>0`
+		var expandedStatusexpression = latestnodeexpression.replace(/\["name"\]$/,`["expandedButtonStatus"]`)+`>0`
+		var newNodeexpression = latestnodeexpression.replace(/\["name"\]$/,`["subElements"][0]["name"]`)
+		if(eval(subelementsSizeexpression))
+		{
+			if(eval(expandedStatusexpression))
+			{
+				const buttonsel = document.querySelector(`.jsonButton[nodeExpression='` + newNodeexpression + `']`);
+				if(buttonsel)
+				{
+				buttonsel.click();
+				buttonsel.focus();				
+				}
+			}
+		}
+  }
+  if (!event.ctrlKey && event.key === 'ArrowLeft') {
+	  
+		var newNodeexpression=latestnodeexpression.replace(/\["subElements"\](\[\d+\])\["name"\]$/, `["name"]`);
+		const buttonsel = document.querySelector(`.jsonButton[nodeExpression='` + newNodeexpression + `']`);
+		if(buttonsel)
+		{
+			buttonsel.click();
+			buttonsel.focus();				
+		}
+  }
+  if (!event.ctrlKey && event.key === ' ') {
+
+		var subelementexpression = latestnodeexpression
+		var subelementsSizeexpression = latestnodeexpression.replace(/\["name"\]$/,`["subElements"]`)+`.length>0`
+		var expandedStatusexpression = latestnodeexpression.replace(/\["name"\]$/,`["expandedButtonStatus"]`)+`>0`
+		var newNodeexpression = latestnodeexpression.replace(/\["name"\]$/,`["subElements"][0]["name"]`)
+		if(eval(subelementsSizeexpression))
+		{
+			if(eval(expandedStatusexpression))
+			{
+				const buttonsel = document.querySelector(`.collapse-btn[nodeExpression='` + latestnodeexpression + `']`);
+
+				if(buttonsel)
+				{
+					buttonsel.click();
+				}
+			}
+			else
+			{
+					  const buttonsel = document.querySelector(`.expand-btn[nodeExpression='` + latestnodeexpression + `']`);
+			  if(buttonsel)
+			  {
+				  buttonsel.click();
+			  }
+
+			}
+		}
+
+
+  }
+  
+  
+  
+  if (event.ctrlKey && event.key === ' ') {
+	  const buttonsel = document.querySelector('.collapse-btn[nodeExpression="' + latestnodeexpression + '"]');
+	  if(buttonsel)
+	  {
+		  buttonsel.click();
+	  }
+  
+  
+	
+}
+})
+function moveUpCallBack()
+{
+	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\["name"\]$/, ""));
+	const idxToMoveBefore = jsonArray.findIndex(item => item.name === eval(str));
+
+
+	 if (idxToMoveBefore > 0 && idxToMoveBefore < jsonArray.length) {
+    const elementToMove = jsonArray.splice(idxToMoveBefore, 1)[0];
+    jsonArray.splice(idxToMoveBefore - 1, 0, elementToMove);
+  }
 	hidejsonButtonContextMenu();
-});
-document.getElementById("rightClickOptionInsertBelow").addEventListener('click', () => {
-	hidejsonButtonContextMenu();
-});
-document.getElementById("rightClickOptionInsertBelow").addEventListener('click', () => {
-	hidejsonButtonContextMenu();
-});
-document.getElementById("rightClickOptionCut").addEventListener('click', () => {
+	refreshJsonPane();
+	
+}
+
+function moveDownCallBack()
+{
+
+	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\["name"\]$/, ""));
+	const idxToMoveAfter = jsonArray.findIndex(item => item.name === eval(str));
+
+  if (idxToMoveAfter >= 0 && idxToMoveAfter < jsonArray.length - 1) {
+    const elementToMove = jsonArray.splice(idxToMoveAfter, 1)[0];
+    jsonArray.splice(idxToMoveAfter + 1, 0, elementToMove);
+  }
+  hidejsonButtonContextMenu();
+  	refreshJsonPane();
+
+};
+
+function  copyButtonCallback(){
 	//alert(jsonButtonTargetParentString)
 	//alert(eval(jsonButtonTargetParentString))
-	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\['name'\]$/, ""));
+	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\["name"\]$/, ""));
+	const indexToDelete = jsonArray.findIndex(item => item.name === eval(str));
+	clipBoardJsonCutPaste=JSON.stringify(jsonArray[indexToDelete]);
+	//jsonArray.splice(indexToDelete, 1);
+	hidejsonButtonContextMenu();
+	refreshJsonPane();
+};
+function  cutButtonCallback(){
+	//alert(jsonButtonTargetParentString)
+	//alert(eval(jsonButtonTargetParentString))
+	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\["name"\]$/, ""));
 	const indexToDelete = jsonArray.findIndex(item => item.name === eval(str));
 	clipBoardJsonCutPaste=JSON.stringify(jsonArray[indexToDelete]);
 	jsonArray.splice(indexToDelete, 1);
 	hidejsonButtonContextMenu();
 	refreshJsonPane();
-});
-document.getElementById("rightClickOptionPasteAsChild").addEventListener('click', () => {
-//	alert(window.jsonButtonTargetParentString.replace(/\['name'\]$/, "")+`["subElements"]`);
-	//	alert(window.jsonButtonTargetParentString.replace(/\['name'\]$/, ""))
-	if (!("subElements" in eval(window.jsonButtonTargetParentString.replace(/\['name'\]$/, ""))))
+};
+
+function pasteAsChildButtonCallback(){
+//	alert(window.jsonButtonTargetParentString.replace(/\["name"\]$/, "")+`["subElements"]`);
+	//	alert(window.jsonButtonTargetParentString.replace(/\["name"\]$/, ""))
+	if (!("subElements" in eval(window.jsonButtonTargetParentString.replace(/\["name"\]$/, ""))))
 	{
-		eval(window.jsonButtonTargetParentString.replace(/\['name'\]$/,"")+`["subElements"]= []`)
+		eval(window.jsonButtonTargetParentString.replace(/\["name"\]$/,"")+`["subElements"]= []`)
 	}
-	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/\['name'\]$/, "")+`["subElements"]`);
+	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/\["name"\]$/, "")+`["subElements"]`);
 	const indexToDelete = jsonArray.findIndex(item => item.name === eval(str));
 	jsonArray.push(JSON.parse(clipBoardJsonCutPaste));
-	clipBoardJsonCutPaste="";
+	//clipBoardJsonCutPaste="";
 	hidejsonButtonContextMenu();
 	refreshJsonPane();
-});
-document.getElementById("rightClickOptionDelete").addEventListener('click', () => {
-	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\['name'\]$/, ""));
+};
+
+function deleteButtonCallback(){
+	let jsonArray=eval(window.jsonButtonTargetParentString.replace(/(\[\d+\])*\["name"\]$/, ""));
 	const indexToDelete = jsonArray.findIndex(item => item.name === eval(str));
 	jsonArray.splice(indexToDelete, 1);
 	hidejsonButtonContextMenu();
 	refreshJsonPane();
-});
+};
 saveConfigBtnElement.addEventListener('click', function () {
 	const modelName = document.getElementById('modelName').value;
 	const newElementString = `{"name":"` +modelName+ `","textDescription":"","modelType":"","plantUmlCode":"","svgLink":"","imageZoomScale":1,"subElements":[]}`;
+	if(modelRenameFormElement.getAttribute("context")=="addJsonAsChild")
+	{
+
+try {
+	var recievedData=JSON.parse(document.getElementById('modelName').value);
+	alert("valid");
+	let jsonObject=eval(window.jsonButtonTargetParentString.replace(/\["name"\]$/, ""));
+			if(jsonObject.hasOwnProperty("subElements")&& Array.isArray(jsonObject["subElements"]))
+		{
+			jsonObject["subElements"].push(JSON.parse(document.getElementById('modelName').value));
+		}
+		else
+		{
+			jsonObject["subElements"] = [JSON.parse(document.getElementById('modelName').value)];					
+		}
+} 
+catch (error) 
+{
+	alert("INVALID");
+}
+};
+
+
+
+		
+	
 	if(modelRenameFormElement.getAttribute("context")=="addChild")
 	{
-		let jsonArray=eval(window.jsonButtonTargetParentString.replace(/\['name'\]$/, "['subElements']"));
-		let jsonObject=eval(window.jsonButtonTargetParentString.replace(/\['name'\]$/, ""));
+		let jsonArray=eval(window.jsonButtonTargetParentString.replace(/\["name"\]$/, "['subElements']"));
+		let jsonObject=eval(window.jsonButtonTargetParentString.replace(/\["name"\]$/, ""));
 			if(jsonObject.hasOwnProperty("subElements")&& Array.isArray(jsonObject["subElements"]))
 		{
 			jsonObject["subElements"].push(JSON.parse(newElementString));
@@ -623,7 +856,7 @@ saveConfigBtnElement.addEventListener('click', function () {
 			jsonObject["subElements"] = [JSON.parse(newElementString)];					
 		}
 	}
-	else
+	if(modelRenameFormElement.getAttribute("context")=="rename")
 	{
 		eval(window.jsonButtonTargetParentString+"="+"'"+modelName+"'");
 	}
@@ -637,7 +870,7 @@ cancelConfigBtnElement.addEventListener('click', function () {
 rightClickImagePasteURL.addEventListener('click', function () {
 	imageUrl=prompt('Enter image link');
 	displaySVGorPNG(imageUrl);
-	eval(str.replace(/\['name'\]$/, '')+"['svgLink']"+" = imageUrl");
+	eval(str.replace(/\["name"\]$/, '')+"['svgLink']"+" = imageUrl");
 	closePopup();
 });
 
@@ -654,6 +887,17 @@ imageInput.addEventListener("change", function(event) {
 	}
 });
 
+TopRightPane.addEventListener('keydown', (event) => {
+	alert("hi")
+	 if (event.key === 'c' && event.ctrlKey)
+	 {
+		    const textToCopy = document.getElementById('textToCopy');
+textToCopy.value = imgElement.src;
+textToCopy.select();
+document.execCommand('copy');
+alert("cop")
+	 }
+})
 TopRightPane.addEventListener("paste", function(event)  {
 		const items = event.clipboardData.items;
             for (let i = 0; i < items.length; i++) {
@@ -667,8 +911,8 @@ TopRightPane.addEventListener("paste", function(event)  {
 						displaySVGorPNG(clipboard)
 
 						//let modelUrl=plantUmlCode2Image(plantUmlCodeElement.value);
-						eval(str.replace(/\['name'\]$/, '')+"['svgLink']"+" = clipboard");
-						eval(str.replace(/\['name'\]$/, '')+"['plantUmlCode']"+" = ''");
+						eval(str.replace(/\["name"\]$/, '')+"['svgLink']"+" = clipboard");
+						eval(str.replace(/\["name"\]$/, '')+"['plantUmlCode']"+" = ''");
 
                     };
                     reader.readAsDataURL(file);
@@ -703,6 +947,20 @@ catch (error)
 });
 loadJsonDataBtnElement.addEventListener('click', loadJsonDataBtn);
 closeJsonDataFormBtnElement.addEventListener('click', closeJsonDataForm);
+
+function moveElementOnePositionEarlier(arr, idxToMoveBefore) {
+  if (idxToMoveBefore > 0 && idxToMoveBefore < arr.length) {
+    const elementToMove = arr.splice(idxToMoveBefore, 1)[0];
+    arr.splice(idxToMoveBefore - 1, 0, elementToMove);
+  }
+}
+
+function moveElementOnePositionLater(arr, idxToMoveAfter) {
+  if (idxToMoveAfter >= 0 && idxToMoveAfter < arr.length - 1) {
+    const elementToMove = arr.splice(idxToMoveAfter, 1)[0];
+    arr.splice(idxToMoveAfter + 1, 0, elementToMove);
+  }
+}
 
 function ChangeBackgroundColor(){
 	if(TopRightPaneImageContainer.style.backgroundColor =="white")
@@ -747,23 +1005,24 @@ function renderJSON(data, container,parentArray) {
 			nameElement.classList.add('jsonButton');
 			container.appendChild(nameElement);
 			nameElement.setAttribute("parentExpression",parentArray);
-			window.str=parentArray+"['name']";
-			window.nodeExpression=str;
+			window.str=parentArray+`["name"]`;
 			nameElement.setAttribute("nodeExpression",str);
 			nameElement.addEventListener('contextmenu', function(event) {
 			str=nameElement.getAttribute("nodeExpression");
-			let parentstr=nameElement.getAttribute("nodeExpression");
+			latestnodeexpression=nameElement.getAttribute("nodeExpression");
+		    parentstr=nameElement.getAttribute("nodeExpression");
 			showContextMenu(event,str,parentstr);
 
 });
 			nameElement.addEventListener('click', function (event) {
 			str=nameElement.getAttribute("nodeExpression")
+			latestnodeexpression=nameElement.getAttribute("nodeExpression");
 
-			window.modelSource=str.replace(/\['name'\]$/, '')+"['svgLink']";
+			window.modelSource=str.replace(/\["name"\]$/, '')+"['svgLink']";
 			window.nodeExpression=str;
 			displaySVGorPNG(eval(window.modelSource));
 			
-			window.modelDescriptionSource=str.replace(/\['name'\]$/, '')+"['textDescription']";
+			window.modelDescriptionSource=str.replace(/\["name"\]$/, '')+"['textDescription']";
 			if(eval(window.modelDescriptionSource)==undefined)
 			{
 				userInputDescriptionElement.placeholder="Enter description here";
@@ -771,12 +1030,13 @@ function renderJSON(data, container,parentArray) {
 			else
 			{
 				userInputDescriptionElement.value = eval(window.modelDescriptionSource);
+				userDescriptionFormatted.innerHTML=userInputDescriptionElement.value;
 			}
-			//modelTypeValue=eval(str.replace(/\['name'\]$/, '')+"['modelType']");
-			//svgLinkValue=eval(str.replace(/\['name'\]$/, '')+"['svgLink']");
-			let plantUmlCode=eval(str.replace(/\['name'\]$/, '')+"['plantUmlCode']");
+			//modelTypeValue=eval(str.replace(/\["name"\]$/, '')+"['modelType']");
+			//svgLinkValue=eval(str.replace(/\["name"\]$/, '')+"['svgLink']");
+			let plantUmlCode=eval(str.replace(/\["name"\]$/, '')+"['plantUmlCode']");
 			plantUmlCodeElement.value=plantUmlCode;
-			let plantUmlModelTypeOfButton=eval(str.replace(/\['name'\]$/, '')+"['modelType']");
+			let plantUmlModelTypeOfButton=eval(str.replace(/\["name"\]$/, '')+"['modelType']");
 			//nodeNameValue=eval(str);
 			if(plantUmlModelTypeOfButton=="")
 			{
@@ -791,7 +1051,9 @@ function renderJSON(data, container,parentArray) {
 
 			// Loop through the NodeList and add the "clicked" class to each button
 			buttonsWithMmAttribute.forEach(function(button) {
-				if(button.getAttribute("nodeExpression")==str)
+				if(button.classList.contains('jsonButton'))
+				{
+				if((button.getAttribute("nodeExpression")==str))
 				{
 					button.style.backgroundColor = 'SlateGray';
 				}
@@ -799,7 +1061,7 @@ function renderJSON(data, container,parentArray) {
 				{
 					button.style.backgroundColor = 'LightGray';
 				}
-					
+				}	
 			});
 
 
@@ -809,6 +1071,7 @@ function renderJSON(data, container,parentArray) {
 		if (Array.isArray(subElements) && subElements.length > 0) {
 			const expandBtn = document.createElement('button');
 			expandBtn.classList.add('expand-btn');
+			expandBtn.setAttribute("nodeExpression",parentArray+`["name"]`);
 			expandBtn.textContent = '+';
 			const nestedContainer = document.createElement('div');
 			if(view=="mindmap")
@@ -820,6 +1083,30 @@ function renderJSON(data, container,parentArray) {
 				nestedContainer.classList.add('nestedContainerListTopToBottomView');
 			}
 			expandBtn.addEventListener('click', () => {
+			//	if(!data["expandedButtonStatus"])
+				{
+				latestnodeexpression=expandBtn.getAttribute("nodeExpression");
+			
+				const buttonsWithMmAttribute = document.querySelectorAll('button[nodeExpression]');
+				buttonsWithMmAttribute.forEach(function(button) {
+				if(button.classList.contains('jsonButton'))
+				{
+				if((button.getAttribute("nodeExpression")==latestnodeexpression))
+				{
+					button.style.backgroundColor = 'SlateGray';
+					button.click();
+					button.focus();
+				}
+				else
+				{
+					button.style.backgroundColor = 'LightGray';
+				}
+				}	
+			});
+
+
+
+			data["expandedButtonStatus"]=1;
 				subElements.forEach((subElement,idx) => {
 					let newpatharray=parentArray+"[\"subElements\"]"+"["+idx+"]";
 				const subElementContainer = document.createElement('div');
@@ -836,19 +1123,61 @@ function renderJSON(data, container,parentArray) {
 				});
 				expandBtn.style.display = 'none';
 				collapseBtn.style.display = 'inline-block';
-				});
+			}});
 			const collapseBtn = document.createElement('button');
 			collapseBtn.classList.add('collapse-btn');
+			collapseBtn.setAttribute("nodeExpression",parentArray+`["name"]`);
 			collapseBtn.textContent = '--';
 			collapseBtn.style.display = 'none';
 			collapseBtn.addEventListener('click', () => {
+			//	if(data["expandedButtonStatus"])
+				{
+			latestnodeexpression=collapseBtn.getAttribute("nodeExpression");
+
+			const buttonsWithMmAttribute = document.querySelectorAll('button[nodeExpression]');
+
+			// Loop through the NodeList and add the "clicked" class to each button
+			buttonsWithMmAttribute.forEach(function(button) {
+				if(button.classList.contains('jsonButton'))
+				{
+				if((button.getAttribute("nodeExpression")==latestnodeexpression))
+				{
+					button.style.backgroundColor = 'SlateGray';
+					button.click();
+					button.focus();
+				}
+				else
+				{
+					button.style.backgroundColor = 'LightGray';
+				}
+				}	
+			});
+
+
+			data["expandedButtonStatus"]=0;
 				nestedContainer.innerHTML = '';
 				expandBtn.style.display = 'inline-block';
 				collapseBtn.style.display = 'none';
-			});
+			}});
 			container.appendChild(expandBtn);
 			container.appendChild(collapseBtn);
 			container.appendChild(nestedContainer);
+			if("expandedButtonStatus" in data)
+			{
+				if(data["expandedButtonStatus"]==1)
+				{
+					expandBtn.click();
+				}
+				else
+				{
+					collapseBtn.click();
+				}
+			}
+			else
+			{
+				data["expandedButtonStatus"]=0;
+				collapseBtn.click();
+			}
 		}
 	}
 }
@@ -877,7 +1206,7 @@ alert("data error")
 }
 }
 function saveJson(){
-const fileName = window.jsonData['name'];
+const fileName = window.jsonData["name"];
 if (fileName !== null && fileName.trim() !== '')
 {
 	const jsonString1= JSON.stringify(window.jsonData);
@@ -937,9 +1266,9 @@ const selectedPlantUmlType = selectElement.options[selectedIndex].value;
 
 	let newstr=window.nodeExpression
 	let modelUrl=plantUmlCode2Image(plantUmlCodeElement.value);
-	eval(newstr.replace(/\['name'\]$/, '')+"['svgLink']"+" = modelUrl");
-	eval(newstr.replace(/\['name'\]$/, '')+"['plantUmlCode']"+" = plantUmlCodeElement.value");
-	eval(newstr.replace(/\['name'\]$/, '')+"['modelType']"+" = selectedPlantUmlType");
+	eval(newstr.replace(/\["name"\]$/, '')+"['svgLink']"+" = modelUrl");
+	eval(newstr.replace(/\["name"\]$/, '')+"['plantUmlCode']"+" = plantUmlCodeElement.value");
+	eval(newstr.replace(/\["name"\]$/, '')+"['modelType']"+" = selectedPlantUmlType");
 
 };
 function encode64(data) {
@@ -1037,11 +1366,11 @@ if((src.toLowerCase().endsWith('.svg')) || (src.includes("/plantuml/svg/")) ) {
 	imgElement.src = src;
 	imgElementSVG.data = src;
 	let scalingFactor = 1
-	if(!('imageZoomScale' in eval(window.nodeExpression.replace(/\['name'\]$/, ''))))
+	if(!('imageZoomScale' in eval(window.nodeExpression.replace(/\["name"\]$/, ''))))
 	{	
-		eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']=1")
+		eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']=1")
 	}
-	scalingFactor=eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']")
+	scalingFactor=eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']")
 	
 	imgElement.style.transform='scale(' + scalingFactor + ')';
 	console.log("scaled SVG at "+scalingFactor)
@@ -1058,11 +1387,11 @@ if((src.toLowerCase().endsWith('.svg')) || (src.includes("/plantuml/svg/")) ) {
 	imgElement.src = src;
 	imgElementSVG.data = src;
 	let scalingFactor = 1
-	if(!('imageZoomScale' in eval(window.nodeExpression.replace(/\['name'\]$/, ''))))
+	if(!('imageZoomScale' in eval(window.nodeExpression.replace(/\["name"\]$/, ''))))
 	{	
-		eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']=1")
+		eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']=1")
 	}
-	let scalingFactorString=window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']"
+	let scalingFactorString=window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']"
 	scalingFactor=eval(scalingFactorString)
 	imgElement.style.transform='scale(' + scalingFactor + ')';
 	imgElementSVG.style.transform= 'scale(' + scalingFactor + ')';
@@ -1117,7 +1446,7 @@ request.onsuccess = function(event) {
     const objectStore = transaction.objectStore(objectStoreName);
 
     // Define the ID/key for the data you want to update
-    const idToUpdate = window.jsonData['name'];
+    const idToUpdate = window.jsonData["name"];
 
     // Use the put method to add or update the data
     const putRequest = objectStore.put({ id: idToUpdate, value: window.jsonData });
@@ -1266,8 +1595,8 @@ function retrieveDataByKey(key) {
             const result = event.target.result;
             if (result) {
                 window.jsonData = result.value;
-				htmlReport="";
-				traverseHierarchy(window.jsonData)
+				//htmlReport="";
+				//traverseHierarchy(window.jsonData)
 				refreshJsonPane();
 				plantUmlCodeElement.value="Click on a node for details"
 				userInputDescriptionElement.value="Click on a node for details"
@@ -1363,59 +1692,25 @@ let lastY;
 leftDivider.addEventListener('mousedown', (e) => {
 	isDraggingLeft = true;
 	lastY = e.clientY;
-	//console.log("left divider")
-	//console.log(e.clientY)
-
-	// Prevent text selection during dragging.
 	e.preventDefault();
 });
 verticalDivider.addEventListener('mousedown', (e) => {
 	isDraggingVertical = true;
 	lastX = e.clientX;
-	//console.log(e.clientX)
-
-	// Prevent text selection during dragging.
 	e.preventDefault();
 });
 rightDivider.addEventListener('mousedown', (e) => {
 	isDraggingRight = true;
 	lastX = e.clientY;
-	//console.log("right divider")
-	//console.log(e.clientY)
-
-	// Prevent text selection during dragging.
 	e.preventDefault();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         document.addEventListener('mousemove', (e) => {
 			  const container = document.getElementById('4Panes');
             const containerWidth = container.clientWidth;
             const containerHeight = container.clientWidth;
-      //      console.log("containerHeight"+containerHeight)
-		//	console.log("X"+e.clientX)
-			//console.log("Y"+e.clientY)
+			const containerRect = container.getBoundingClientRect();
 			if (!isDraggingRight && !isDraggingLeft && !isDraggingVertical ) return;
-
           
             if(isDraggingVertical)
 			{
@@ -1429,9 +1724,13 @@ rightDivider.addEventListener('mousedown', (e) => {
 					rightPane.style.width = newRightWidth + 'px';
 					topRightPane.style.width = newRightWidth + 'px';
 					bottomRightPane.style.width = newRightWidth + 'px';
-				//	console.log("DraggingCenter")
-				//	console.log("LeftWidth"+newLeftWidth)
-				//	console.log("RightWidth"+newRightWidth)
+				
+				
+				
+				
+				
+				
+				
 				}
 			}
             if(isDraggingRight)
@@ -1440,11 +1739,10 @@ rightDivider.addEventListener('mousedown', (e) => {
 				const newBottomRightHeight =  containerHeight - e.clientY;
 			
 				if (newTopRightHeight >= 1 && newBottomRightHeight >= 1) {
-					topRightPane.style.height = newTopRightHeight + 'px';
-					bottomRightPane.style.height = newBottomRightHeight + 'px';
-			//		console.log("DraggingRight")
-			//		console.log("newTopRightHeight"+newTopRightHeight)
-			//		console.log("newBottomRightHeight"+newBottomRightHeight)
+				let dividerPosition=((e.clientY - containerRect.top)/containerRect.height)*100
+				topRightPane.style.height = dividerPosition + '%';
+				bottomRightPane.style.height = (100-dividerPosition) + '%';
+				
 				}
 			}
             if(isDraggingLeft)
@@ -1453,11 +1751,9 @@ rightDivider.addEventListener('mousedown', (e) => {
 				const newBottomLeftHeight = containerHeight - newTopLeftHeight
 			
 				if (newTopLeftHeight >= 1 && newBottomLeftHeight >= 1) {
-					topLeftPane.style.height = newTopLeftHeight + 'px';
-					bottomLeftPane.style.height = newBottomLeftHeight + 'px';
-			//		console.log("DraggingLeft")
-			//		console.log("newTopLeftHeight"+newTopLeftHeight)
-			//		console.log("newBottomLeftHeight"+newBottomLeftHeight)
+				let dividerPosition=((e.clientY - containerRect.top)/containerRect.height)*100
+				topLeftPane.style.height = dividerPosition + '%';
+				bottomLeftPane.style.height = (100-dividerPosition) + '%';
 				}
 			}
 		
@@ -1477,17 +1773,17 @@ rightDivider.addEventListener('mousedown', (e) => {
 
 function startZoom(direction) {
             zoomInterval = setInterval(function () {
-                if(!('imageZoomScale' in  eval(window.nodeExpression.replace(/\['name'\]$/, '')))){
-						eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']=1")
+                if(!('imageZoomScale' in  eval(window.nodeExpression.replace(/\["name"\]$/, '')))){
+						eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']=1")
 				}
 				if (direction === 'in') {
-                    currentScale = eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']")
+                    currentScale = eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']")
                     currentScale *= 1.05; // Increase the scale factor for zooming in
-                    eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']=currentScale")
+                    eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']=currentScale")
                 } else if (direction === 'out') {
-                    currentScale = eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']")
+                    currentScale = eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']")
                     currentScale /= 1.05; // Decrease the scale factor for zooming out
-                    eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']=currentScale")
+                    eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']=currentScale")
                 }
 					document.getElementById('developerZone').textContent ="Zoom:"+currentScale;
 
@@ -1502,7 +1798,7 @@ function startZoom(direction) {
         function applyTransform() {
             document.getElementById('ModelSource').style.transform='scale(' + currentScale + ')';
 			document.getElementById('ModelSourceSVG').style.transform= 'scale(' + currentScale + ')';
-		//alert(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']"+'=currentScale')
-		eval(window.nodeExpression.replace(/\['name'\]$/, '')+"['imageZoomScale']"+'=currentScale');
+		//alert(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']"+'=currentScale')
+		eval(window.nodeExpression.replace(/\["name"\]$/, '')+"['imageZoomScale']"+'=currentScale');
 				console.log(currentScale)
         }

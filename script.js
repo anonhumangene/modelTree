@@ -29,7 +29,7 @@ To do:
 */
 
 
-const plantUmlServer = "http://www.plantuml.com";//avoid this for sensitive data
+const plantUmlServer = "https://www.plantuml.com";//avoid this for sensitive data
 
 
 //const plantUmlServer = "http://127.0.0.1:8000";
